@@ -42,6 +42,9 @@ public class GameController : MonoBehaviour
 
     public PlayerController Player;
 
+    [SerializeField]
+    protected List<BaseWeapon> _weapons;
+
     public GameState GameState;
 
     #endregion
@@ -96,6 +99,34 @@ public class GameController : MonoBehaviour
     #endregion
 
     #region Methods
+
+    public BaseWeapon CreateWeapon(Transform transform)
+    {
+        WeaponType weaponType = (WeaponType)UnityEngine.Random.Range(0, (int)WeaponType.Count);
+        while(weaponType == WeaponType.None || weaponType == WeaponType.Count)
+        {
+            weaponType = (WeaponType)UnityEngine.Random.Range(0, (int)WeaponType.Count);
+        }
+        return CreateWeapon(weaponType, transform);
+    }
+
+    public BaseWeapon CreateWeapon(WeaponType weaponType, Transform transform)
+    {
+        if(weaponType == WeaponType.None || weaponType == WeaponType.Count)
+        {
+            return null;
+        }
+
+        foreach(BaseWeapon weapon in _weapons)
+        {
+            if(weapon.Type == weaponType)
+            {
+                return Instantiate(weapon, transform.position, transform.rotation, transform);
+            }
+        }
+
+        return null;
+    }
 
     #endregion
 }

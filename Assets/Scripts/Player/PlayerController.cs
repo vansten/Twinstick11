@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     #region Variables
 
+    public Transform WeaponParent;
     public float Speed;
     public float BaseHP;
 
@@ -24,7 +25,7 @@ public class PlayerController : MonoBehaviour
         get { return _currentHP; }
         set
         {
-            if(_currentHP != value)
+            if (_currentHP != value)
             {
                 _currentHP = value;
 
@@ -37,6 +38,29 @@ public class PlayerController : MonoBehaviour
                 if (OnHPChanged != null)
                 {
                     OnHPChanged(_currentHP, _currentHP / BaseHP);
+                }
+            }
+        }
+    }
+
+    protected BaseWeapon _currentEquippedWeapon;
+    public delegate void WeaponChangedDelegate(WeaponType weaponType);
+    public event WeaponChangedDelegate OnWeaponChanged;
+    public BaseWeapon CurrentEquippedWeapon
+    {
+        get
+        {
+            return _currentEquippedWeapon;
+        }
+        set
+        {
+            if(_currentEquippedWeapon != value)
+            {
+                _currentEquippedWeapon = value;
+
+                if(OnWeaponChanged != null && _currentEquippedWeapon != null)
+                {
+                    OnWeaponChanged(_currentEquippedWeapon.Type);
                 }
             }
         }
@@ -68,20 +92,41 @@ public class PlayerController : MonoBehaviour
     {
         ProcessMovement();
 
-        if(Input.GetKeyDown(KeyCode.K))
+        if(_currentEquippedWeapon != null)
         {
-            CurrentHP -= 10.0f;
+            ProcessShoot();
         }
     }
 
     #endregion
 
     #region Methods
+    
+    public void EquipWeapon(BaseWeapon weapon)
+    {
+        if(CurrentEquippedWeapon != null)
+        {
+            Debug.LogWarning("Change this!");
+            Destroy(CurrentEquippedWeapon.gameObject);
+        }
+        weapon.transform.parent = WeaponParent;
+        weapon.transform.localPosition = Vector3.zero;
+        weapon.transform.localRotation = Quaternion.identity;
+        CurrentEquippedWeapon = weapon;
+    }
 
     protected void ProcessMovement()
     {
         transform.position += InputManager.GetMovementDirection() * Speed * Time.deltaTime;
         transform.forward = (_crosshair.position - transform.position).normalized;
+    }
+
+    protected void ProcessShoot()
+    {
+        if(InputManager.IsShooting())
+        {
+            _currentEquippedWeapon.Shoot();
+        }
     }
 
     protected void OnGamePhaseChangedCallback(GamePhase gamePhase)
@@ -90,6 +135,15 @@ public class PlayerController : MonoBehaviour
         if(enabled)
         {
             CurrentHP = BaseHP;
+            if (CurrentEquippedWeapon == null || CurrentEquippedWeapon.Type != WeaponType.Pistol)
+            {
+                if (CurrentEquippedWeapon != null)
+                {
+                    Debug.LogWarning("Change this!");
+                    Destroy(CurrentEquippedWeapon.gameObject);
+                }
+                CurrentEquippedWeapon = GameController.Instance.CreateWeapon(WeaponType.Pistol, WeaponParent);
+            }
         }
     }
 
