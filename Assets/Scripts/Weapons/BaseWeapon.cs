@@ -18,8 +18,12 @@ public abstract class BaseWeapon : MonoBehaviour
     #region Variables
 
     public WeaponType Type;
-    public AudioSource ShootSound;
-    public ParticleSystem ShootParticles;
+    [SerializeField]
+    protected AudioSource _shootSound;
+    [SerializeField]
+    protected ParticleSystem _shootParticles;
+    [SerializeField]
+    protected float _damage;
 
     #endregion
 
@@ -29,14 +33,14 @@ public abstract class BaseWeapon : MonoBehaviour
 
     protected void SpawnShootEffects()
     {
-        if(ShootSound != null)
+        if(_shootSound != null)
         {
-            ShootSound.Play();
+            _shootSound.Play();
         }
 
-        if(ShootParticles != null)
+        if(_shootParticles != null)
         {
-            ShootParticles.Play();
+            _shootParticles.Play();
         }
     }
 

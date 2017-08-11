@@ -1,17 +1,18 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, IDamagable
 {
     #region Variables
 
-    public Transform WeaponParent;
-    public float Speed;
-    public float BaseHP;
-
     [SerializeField]
-    protected Transform _crosshair;
+    protected Transform _weaponParent;
+    [SerializeField]
+    protected float _speed;
+    [SerializeField]
+    protected float _baseHP;
 
     #endregion
 
@@ -34,10 +35,10 @@ public class PlayerController : MonoBehaviour
                     GameController.Instance.CurrentPhase = GamePhase.DeathScreen;
                 }
 
-                _currentHP = Mathf.Clamp(_currentHP, 0.0f, BaseHP);
+                _currentHP = Mathf.Clamp(_currentHP, 0.0f, _baseHP);
                 if (OnHPChanged != null)
                 {
-                    OnHPChanged(_currentHP, _currentHP / BaseHP);
+                    OnHPChanged(_currentHP, _currentHP / _baseHP);
                 }
             }
         }
@@ -72,9 +73,9 @@ public class PlayerController : MonoBehaviour
 
     protected void OnValidate()
     {
-        if(BaseHP <= 0.0f)
+        if(_baseHP <= 0.0f)
         {
-            BaseHP = 0.01f;
+            _baseHP = 0.01f;
         }
     }
 
@@ -85,12 +86,12 @@ public class PlayerController : MonoBehaviour
 
     protected void Start()
     {
-        CurrentHP = BaseHP;
+        CurrentHP = _baseHP;
     }
 
     protected void Update()
     {
-        ProcessMovement();
+        ProcessTransform();
 
         if(_currentEquippedWeapon != null)
         {
@@ -106,19 +107,28 @@ public class PlayerController : MonoBehaviour
     {
         if(CurrentEquippedWeapon != null)
         {
-            Debug.LogWarning("Change this!");
-            Destroy(CurrentEquippedWeapon.gameObject);
+            CurrentEquippedWeapon.gameObject.SetActive(false);
+            CurrentEquippedWeapon = null;
         }
-        weapon.transform.parent = WeaponParent;
+        weapon.transform.parent = _weaponParent;
         weapon.transform.localPosition = Vector3.zero;
         weapon.transform.localRotation = Quaternion.identity;
         CurrentEquippedWeapon = weapon;
     }
 
-    protected void ProcessMovement()
+    public void TakeDamage(float damage)
     {
-        transform.position += InputManager.GetMovementDirection() * Speed * Time.deltaTime;
-        transform.forward = (_crosshair.position - transform.position).normalized;
+        CurrentHP -= damage;
+    }
+
+    protected void ProcessTransform()
+    {
+        transform.position += InputManager.GetMovementDirection() * _speed * Time.deltaTime;
+        Vector3 forward = InputManager.GetCrosshairMovement();
+        if(forward.magnitude > 0.001f)
+        {
+            transform.forward = forward;
+        }
     }
 
     protected void ProcessShoot()
@@ -134,15 +144,15 @@ public class PlayerController : MonoBehaviour
         enabled = gamePhase == GamePhase.Game;
         if(enabled)
         {
-            CurrentHP = BaseHP;
+            CurrentHP = _baseHP;
             if (CurrentEquippedWeapon == null || CurrentEquippedWeapon.Type != WeaponType.Pistol)
             {
                 if (CurrentEquippedWeapon != null)
                 {
-                    Debug.LogWarning("Change this!");
-                    Destroy(CurrentEquippedWeapon.gameObject);
+                    CurrentEquippedWeapon.gameObject.SetActive(false);
+                    CurrentEquippedWeapon = null;
                 }
-                CurrentEquippedWeapon = GameController.Instance.CreateWeapon(WeaponType.Pistol, WeaponParent);
+                CurrentEquippedWeapon = GameController.Instance.CreateWeapon(WeaponType.Pistol, _weaponParent);
             }
         }
     }

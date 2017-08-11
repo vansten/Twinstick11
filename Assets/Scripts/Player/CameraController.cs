@@ -6,10 +6,13 @@ public class CameraController : MonoBehaviour
 {
     #region Variables
 
-    public float Angle;
-    public float Offset;
+    [SerializeField]
+    protected float _angle;
+    [SerializeField]
+    protected float _offset;
     [Range(0.0f, 1.0f)]
-    public float CameraSpeed;
+    [SerializeField]
+    protected float _cameraSpeed;
 
     [SerializeField]
     protected Transform _target;
@@ -20,10 +23,10 @@ public class CameraController : MonoBehaviour
 
     protected void OnValidate()
     {
-        transform.forward = (Quaternion.Euler(-Angle, 0.0f, 0.0f) * Vector3.down).normalized;
+        transform.forward = (Quaternion.Euler(-_angle, 0.0f, 0.0f) * Vector3.down).normalized;
         if (_target != null)
         {
-            transform.position = _target.position + Offset * -transform.forward;
+            transform.position = _target.position + _offset * -transform.forward;
         }
     }
 
@@ -34,8 +37,8 @@ public class CameraController : MonoBehaviour
 
     protected void LateUpdate()
     {
-        Vector3 targetPosition = _target.position + Offset * -transform.forward;
-        transform.position = Vector3.Slerp(transform.position, targetPosition, CameraSpeed);
+        Vector3 targetPosition = _target.position + _offset * -transform.forward;
+        transform.position = Vector3.Slerp(transform.position, targetPosition, _cameraSpeed);
     }
 
     #endregion

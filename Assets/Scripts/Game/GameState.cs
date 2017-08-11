@@ -7,8 +7,10 @@ public class GameState
 {
     #region Variables
 
-    public uint FirstWaveEnemiesCount;
-    public uint EnemiesCountChangeRate;
+    [SerializeField]
+    protected uint _firstWaveEnemiesCount;
+    [SerializeField]
+    protected uint _enemiesCountChangeRate;
 
     #endregion
 
@@ -33,7 +35,7 @@ public class GameState
                     OnCurrentWaveChanged(_currentWave);
                 }
 
-                EnemiesLeft = FirstWaveEnemiesCount + (_currentWave - 1) * EnemiesCountChangeRate;
+                EnemiesLeft = _firstWaveEnemiesCount + (_currentWave - 1) * _enemiesCountChangeRate;
             }
         }
     }
@@ -79,7 +81,7 @@ public class GameState
         if(gamePhase == GamePhase.Game)
         {
             CurrentWave = 1;
-            EnemiesLeft = FirstWaveEnemiesCount;
+            EnemiesLeft = _firstWaveEnemiesCount;
         }
     }
 

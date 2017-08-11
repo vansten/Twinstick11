@@ -7,15 +7,21 @@ public class RaycastBasedWeapon : BaseWeapon
 {
     #region Variables
 
-    public float ShootDelay;
-    public uint RaycastCount;
+    [SerializeField]
+    protected float _shootDelay;
+    [SerializeField]
+    protected uint _raycastCount;
     [Tooltip("Ignored when RaycastCount is less or equal to 1")]
-    public float ShootAngle;
-    public Transform RaycastOrigin;
+    [SerializeField]
+    protected float _shootAngle;
+    [SerializeField]
+    protected Transform _raycastOrigin;
     [Tooltip("0 or less means no overheat at all")]
-    public int ShootsBeforeOverheat = -1;
+    [SerializeField]
+    protected int _shootsBeforeOverheat = -1;
     [Tooltip("Ignored when ShootsBeforeOverheat is greater than 0")]
-    public float CoolingDownTime;
+    [SerializeField]
+    protected float _coolingDownTime;
 
     protected float _lastShootTime;
     protected int _shoots;
@@ -27,28 +33,28 @@ public class RaycastBasedWeapon : BaseWeapon
 
     protected void OnDrawGizmos()
     {
-        if (RaycastOrigin == null)
+        if (_raycastOrigin == null)
         {
             return;
         }
 
-        float initAngle = -ShootAngle * 0.5f;
-        float angleDelta = ShootAngle / (float)RaycastCount;
-        if (RaycastCount == 1)
+        float initAngle = -_shootAngle * 0.5f;
+        float angleDelta = _shootAngle / (float)_raycastCount;
+        if (_raycastCount == 1)
         {
             initAngle = 0.0f;
         }
-        for (int i = 0; i < RaycastCount; ++i)
+        for (int i = 0; i < _raycastCount; ++i)
         {
-            Vector3 direction = Quaternion.Euler(0.0f, initAngle + i * angleDelta, 0.0f) * RaycastOrigin.forward;
+            Vector3 direction = Quaternion.Euler(0.0f, initAngle + i * angleDelta, 0.0f) * _raycastOrigin.forward;
             Gizmos.color = Color.red;
-            Gizmos.DrawLine(RaycastOrigin.position, RaycastOrigin.position + direction * 2.0f);
+            Gizmos.DrawLine(_raycastOrigin.position, _raycastOrigin.position + direction * 2.0f);
         }
     }
 
     protected void Update()
     {
-        if(_overheated && (Time.realtimeSinceStartup - _lastShootTime) > CoolingDownTime)
+        if(_overheated && (Time.realtimeSinceStartup - _lastShootTime) > _coolingDownTime)
         {
             _overheated = false;
             _shoots = 0;
@@ -61,14 +67,14 @@ public class RaycastBasedWeapon : BaseWeapon
 
     public override void Shoot()
     {
-        if (RaycastCount == 0)
+        if (_raycastCount == 0)
         {
             return;
         }
 
         float currentTime = Time.realtimeSinceStartup;
 
-        if(currentTime - _lastShootTime <= ShootDelay)
+        if(currentTime - _lastShootTime <= _shootDelay)
         {
             return;
         }
@@ -82,29 +88,29 @@ public class RaycastBasedWeapon : BaseWeapon
 
         SpawnShootEffects();
 
-        if (ShootsBeforeOverheat > 0)
+        if (_shootsBeforeOverheat > 0)
         {
             _shoots += 1;
-            _overheated = _shoots >= ShootsBeforeOverheat;
+            _overheated = _shoots >= _shootsBeforeOverheat;
         }
 
-        float initAngle = -ShootAngle * 0.5f;
-        float angleDelta = ShootAngle / (float)RaycastCount;
-        if(RaycastCount == 1)
+        float initAngle = -_shootAngle * 0.5f;
+        float angleDelta = _shootAngle / (float)_raycastCount;
+        if(_raycastCount == 1)
         {
             initAngle = 0.0f;
         }
-        for (int i = 0; i < RaycastCount; ++i)
+        for (int i = 0; i < _raycastCount; ++i)
         {
-            Vector3 direction = Quaternion.Euler(0.0f, initAngle + i * angleDelta, 0.0f) * RaycastOrigin.forward;
-            TryKillByRaycast(RaycastOrigin.position, direction);
+            Vector3 direction = Quaternion.Euler(0.0f, initAngle + i * angleDelta, 0.0f) * _raycastOrigin.forward;
+            TryKillByRaycast(_raycastOrigin.position, direction);
         }
     }
 
     protected void TryKillByRaycast(Vector3 startPosition, Vector3 direction)
     {
         int layerMask = 1 << LayerManager.Enemies;
-        Ray ray = new Ray(RaycastOrigin.position, direction);
+        Ray ray = new Ray(_raycastOrigin.position, direction);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit, float.MaxValue, layerMask))
         {
@@ -113,7 +119,7 @@ public class RaycastBasedWeapon : BaseWeapon
                 return;
             }
 
-            Debug.Log(hit.collider.gameObject.name);
+            Debug.LogFormat("{0}: damage: {1}", hit.collider.gameObject.name, _damage);
         }
     }
 

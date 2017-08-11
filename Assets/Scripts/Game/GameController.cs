@@ -41,11 +41,12 @@ public class GameController : MonoBehaviour
     #region Variables
 
     public PlayerController Player;
+    public GameState GameState;
 
     [SerializeField]
     protected List<BaseWeapon> _weapons;
 
-    public GameState GameState;
+    protected Dictionary<WeaponType, ObjectPool<BaseWeapon>> _weaponsPools;
 
     #endregion
 
@@ -79,6 +80,13 @@ public class GameController : MonoBehaviour
 
     protected void Awake()
     {
+        _weaponsPools = new Dictionary<WeaponType, ObjectPool<BaseWeapon>>();
+        int weaponsCount = _weapons.Count;
+        for(int i = 0; i < weaponsCount; ++i)
+        {
+            _weaponsPools.Add(_weapons[i].Type, new ObjectPool<BaseWeapon>());
+            _weaponsPools[_weapons[i].Type].Init(_weapons[i], transform, GrowthStrategy.DoubleSize, 8);
+        }
     }
 
     protected void Start()
@@ -93,6 +101,11 @@ public class GameController : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.D))
         {
             GameState.EnemiesLeft -= 1;
+        }
+
+        foreach(WeaponType weaponType in _weaponsPools.Keys)
+        {
+            _weaponsPools[weaponType].CollectInactiveObjects();
         }
     }
 
@@ -121,7 +134,7 @@ public class GameController : MonoBehaviour
         {
             if(weapon.Type == weaponType)
             {
-                return Instantiate(weapon, transform.position, transform.rotation, transform);
+                return _weaponsPools[weaponType].GetObject(transform);
             }
         }
 
