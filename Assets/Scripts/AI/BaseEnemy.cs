@@ -15,7 +15,7 @@ public class BaseEnemy : MonoBehaviour, IDamagable
 
     #region Unity Methods
 
-    protected void OnEnable()
+    protected virtual void OnEnable()
     {
         _currentHP = _baseHP;
     }

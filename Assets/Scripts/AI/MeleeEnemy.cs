@@ -36,19 +36,27 @@ public class MeleeEnemy : BaseEnemy
 
     #region Unity methods
 
-    protected void Start()
+    protected override void OnEnable()
     {
+        base.OnEnable();
+
         _navMeshAgent = GetComponent<UnityEngine.AI.NavMeshAgent>();
         _navMeshAgent.speed = Speed;
 
-        _stateMachine = new AI.StateMachine<MeleeEnemy>();
-        _stateMachine.Init(this);
+        if (_stateMachine == null)
+        {
+            _stateMachine = new AI.StateMachine<MeleeEnemy>();
+            _stateMachine.Init(this);
+        }
         _stateMachine.ChangeState<MeleeEnemyStates.ChasePlayer>();
     }
 
     protected void Update()
     {
-        _stateMachine.Update(Time.deltaTime);
+        if(_stateMachine != null)
+        {
+            _stateMachine.Update(Time.deltaTime);
+        }
     }
 
     #endregion
@@ -82,7 +90,10 @@ namespace MeleeEnemyStates
         public override void Update(MeleeEnemy owner, float deltaSeconds)
         {
             owner.NavMeshAgent.SetDestination(GameController.Instance.Player.transform.position);
-            if(owner.NavMeshAgent.remainingDistance < MeleeEnemy.ChasingDistance)
+
+            Vector3 difference = GameController.Instance.Player.transform.position - owner.transform.position;
+            difference.y = 0.0f;
+            if (difference.magnitude < MeleeEnemy.ChasingDistance)
             {
                 owner.StateMachine.ChangeState<Attack>();
             }
