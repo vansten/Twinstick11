@@ -93,7 +93,7 @@ public class WeaponSpawner : MonoBehaviour
 
         if (enabled && _currentSpawnedWeapon != null)
         {
-            Destroy(_currentSpawnedWeapon.gameObject);
+            _currentSpawnedWeapon.gameObject.SetActive(false);
         }
     }
 
@@ -114,6 +114,11 @@ public class WeaponSpawner : MonoBehaviour
 
     protected void CollectWeapon(PlayerController player)
     {
+        if(_currentSpawnedWeapon == null)
+        {
+            return;
+        }
+
         player.EquipWeapon(_currentSpawnedWeapon);
         _currentSpawnedWeapon = null;
     }

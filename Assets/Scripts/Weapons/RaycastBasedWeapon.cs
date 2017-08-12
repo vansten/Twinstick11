@@ -110,7 +110,9 @@ public class RaycastBasedWeapon : BaseWeapon
     protected void TryKillByRaycast(Vector3 startPosition, Vector3 direction)
     {
         int layerMask = 1 << LayerManager.Enemies;
+        layerMask |= 1 << LayerManager.Obstacles;
         Ray ray = new Ray(_raycastOrigin.position, direction);
+        Debug.DrawRay(ray.origin, ray.direction, Color.red, 5.0f);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit, float.MaxValue, layerMask))
         {
@@ -119,7 +121,11 @@ public class RaycastBasedWeapon : BaseWeapon
                 return;
             }
 
-            Debug.LogFormat("{0}: damage: {1}", hit.collider.gameObject.name, _damage);
+            IDamagable damagable = hit.collider.gameObject.GetComponent<IDamagable>();
+            if(damagable != null)
+            {
+                damagable.TakeDamage(_damage);
+            }
         }
     }
 

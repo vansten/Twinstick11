@@ -30,9 +30,9 @@ public abstract class BaseProjectile : MonoBehaviour
         }
     }
 
-    protected void OnCollisionEnter(Collision collision)
+    protected void OnTriggerEnter(Collider collider)
     {
-        HandleCollision(collision);
+        HandleCollision(collider);
     }
 
     #endregion
@@ -56,7 +56,7 @@ public abstract class BaseProjectile : MonoBehaviour
         transform.position += _direction * _speed * Time.deltaTime;
     }
 
-    protected abstract void HandleCollision(Collision collision);
+    protected abstract void HandleCollision(Collider collider);
 
     #endregion
 }

@@ -44,6 +44,18 @@ public class ObjectPool<T> where T : MonoBehaviour
         }
     }
 
+    public void DisableAllObjects()
+    {
+        int objectsCount = _spawnedObjects.Count;
+        for (int i = 0; i < objectsCount; ++i)
+        {
+            if(_spawnedObjects[i] != null)
+            {
+                _spawnedObjects[i].gameObject.SetActive(false);
+            }
+        }
+    }
+
     public T GetObject(Transform transform)
     {
         if(_spawnedObjects == null)

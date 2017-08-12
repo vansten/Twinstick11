@@ -30,12 +30,13 @@ public class GameState
             if (_currentWave != value)
             {
                 _currentWave = value;
-                if(OnCurrentWaveChanged != null)
+
+                EnemiesLeft = _firstWaveEnemiesCount + (_currentWave - 1) * _enemiesCountChangeRate;
+
+                if (OnCurrentWaveChanged != null)
                 {
                     OnCurrentWaveChanged(_currentWave);
                 }
-
-                EnemiesLeft = _firstWaveEnemiesCount + (_currentWave - 1) * _enemiesCountChangeRate;
             }
         }
     }
@@ -81,7 +82,6 @@ public class GameState
         if(gamePhase == GamePhase.Game)
         {
             CurrentWave = 1;
-            EnemiesLeft = _firstWaveEnemiesCount;
         }
     }
 

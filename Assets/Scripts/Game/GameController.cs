@@ -41,6 +41,7 @@ public class GameController : MonoBehaviour
     #region Variables
 
     public PlayerController Player;
+    public EnemySpawner EnemySpawner;
     public GameState GameState;
 
     [SerializeField]
@@ -98,11 +99,6 @@ public class GameController : MonoBehaviour
 
     protected void Update()
     {
-        if(Input.GetKeyDown(KeyCode.D))
-        {
-            GameState.EnemiesLeft -= 1;
-        }
-
         foreach(WeaponType weaponType in _weaponsPools.Keys)
         {
             _weaponsPools[weaponType].CollectInactiveObjects();

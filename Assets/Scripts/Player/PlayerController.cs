@@ -14,6 +14,8 @@ public class PlayerController : MonoBehaviour, IDamagable
     [SerializeField]
     protected float _baseHP;
 
+    protected Vector3 _startPosition;
+
     #endregion
 
     #region Properties
@@ -82,6 +84,7 @@ public class PlayerController : MonoBehaviour, IDamagable
     protected void Awake()
     {
         GameController.Instance.OnGamePhaseChanged += OnGamePhaseChangedCallback;
+        _startPosition = transform.position;
     }
 
     protected void Start()
@@ -110,6 +113,12 @@ public class PlayerController : MonoBehaviour, IDamagable
             CurrentEquippedWeapon.gameObject.SetActive(false);
             CurrentEquippedWeapon = null;
         }
+
+        if (weapon == null)
+        {
+            return;
+        }
+
         weapon.transform.parent = _weaponParent;
         weapon.transform.localPosition = Vector3.zero;
         weapon.transform.localRotation = Quaternion.identity;
@@ -124,7 +133,7 @@ public class PlayerController : MonoBehaviour, IDamagable
     protected void ProcessTransform()
     {
         transform.position += InputManager.GetMovementDirection() * _speed * Time.deltaTime;
-        Vector3 forward = InputManager.GetCrosshairMovement();
+        Vector3 forward = InputManager.GetForwardDirection() + InputManager.GetObjectToMouseDirection(transform.position);
         if(forward.magnitude > 0.001f)
         {
             transform.forward = forward;
@@ -144,6 +153,7 @@ public class PlayerController : MonoBehaviour, IDamagable
         enabled = gamePhase == GamePhase.Game;
         if(enabled)
         {
+            transform.position = _startPosition;
             CurrentHP = _baseHP;
             if (CurrentEquippedWeapon == null || CurrentEquippedWeapon.Type != WeaponType.Pistol)
             {

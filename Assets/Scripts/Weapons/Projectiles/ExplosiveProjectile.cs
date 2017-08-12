@@ -28,23 +28,18 @@ public class ExplosiveProjectile : BaseProjectile
 
     #region Methods
 
-    protected override void HandleCollision(Collision collision)
+    protected override void HandleCollision(Collider collider)
     {
-        Instantiate(_explosionParticles);
         int layerMask = 1 << LayerManager.Enemies;
         layerMask |= 1 << LayerManager.Player;
-        RaycastHit[] hits = Physics.SphereCastAll(transform.position, _explosionRange, Vector3.zero, _explosionRange, layerMask, QueryTriggerInteraction.Ignore);
-        if(hits.Length > 0)
-        {
-            foreach(RaycastHit hit in hits)
-            {
-                if(hit.collider == null)
-                {
-                    continue;
-                }
 
-                IDamagable damagableObject = hit.collider.gameObject.GetComponent<IDamagable>();
-                if(damagableObject != null)
+        Collider[] colliders = Physics.OverlapSphere(transform.position, _explosionRange, layerMask, QueryTriggerInteraction.Ignore);
+        if(colliders.Length > 0)
+        {
+            foreach (Collider col in colliders)
+            {
+                IDamagable damagableObject = col.gameObject.GetComponent<IDamagable>();
+                if (damagableObject != null)
                 {
                     damagableObject.TakeDamage(_damage);
                 }
