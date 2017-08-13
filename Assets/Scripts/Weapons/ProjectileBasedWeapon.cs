@@ -50,6 +50,7 @@ public class ProjectileBasedWeapon : BaseWeapon
 
         SpawnShootEffects();
         BaseProjectile projectile = _projectilesPool.GetObject(_projectileSpawnOrigin);
+        projectile.transform.localScale = _projectilePrefab.transform.localScale;
         projectile.Shoot(_projectileSpawnOrigin.forward, _projectileSpeed, _damage);
     }
 

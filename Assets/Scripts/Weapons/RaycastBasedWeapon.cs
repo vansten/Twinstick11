@@ -20,8 +20,6 @@ public class RaycastBasedWeapon : BaseWeapon
     [SerializeField]
     protected int _shootsBeforeOverheat = -1;
     [Tooltip("Ignored when ShootsBeforeOverheat is greater than 0")]
-    [SerializeField]
-    protected float _coolingDownTime;
 
     protected float _lastShootTime;
     protected int _shoots;
@@ -54,11 +52,17 @@ public class RaycastBasedWeapon : BaseWeapon
 
     protected void Update()
     {
-        if(_overheated && (Time.realtimeSinceStartup - _lastShootTime) > _coolingDownTime)
+        if(_shootsBeforeOverheat <= 0)
         {
-            _overheated = false;
-            _shoots = 0;
+            return;
         }
+        
+        if (!InputManager.IsShooting())
+        {
+            _shoots -= 1;
+        }
+
+        _overheated = _shoots >= _shootsBeforeOverheat;
     }
 
     #endregion
@@ -87,12 +91,8 @@ public class RaycastBasedWeapon : BaseWeapon
         }
 
         SpawnShootEffects();
-
-        if (_shootsBeforeOverheat > 0)
-        {
-            _shoots += 1;
-            _overheated = _shoots >= _shootsBeforeOverheat;
-        }
+        
+        _shoots += 1;
 
         float initAngle = -_shootAngle * 0.5f;
         float angleDelta = _shootAngle / (float)_raycastCount;

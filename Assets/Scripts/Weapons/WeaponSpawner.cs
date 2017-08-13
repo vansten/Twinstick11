@@ -14,6 +14,8 @@ public class WeaponSpawner : MonoBehaviour
     [SerializeField]
     protected WeaponType _weaponTypeToSpawn;
     [SerializeField]
+    protected Vector3 _weaponRotationAxis;
+    [SerializeField]
     protected float _weaponRotationSpeed;
 
     protected BaseWeapon _currentSpawnedWeapon;
@@ -40,7 +42,7 @@ public class WeaponSpawner : MonoBehaviour
     {
         if(_currentSpawnedWeapon != null)
         {
-            _currentSpawnedWeapon.transform.Rotate(Vector3.one * _weaponRotationSpeed * Time.deltaTime);
+            _currentSpawnedWeapon.transform.Rotate(_weaponRotationAxis * _weaponRotationSpeed * Time.deltaTime);
             return;
         }
 

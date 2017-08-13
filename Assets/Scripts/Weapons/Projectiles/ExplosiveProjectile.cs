@@ -12,6 +12,8 @@ public class ExplosiveProjectile : BaseProjectile
     [SerializeField]
     protected AudioSource _explosionSound;
     [SerializeField]
+    protected MeshRenderer _meshRenderer;
+    [SerializeField]
     protected float _explosionRange;
 
     #endregion
@@ -22,6 +24,14 @@ public class ExplosiveProjectile : BaseProjectile
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, _explosionRange);
+    }
+
+    protected void OnEnable()
+    {
+        if(_meshRenderer != null)
+        {
+            _meshRenderer.enabled = true;
+        }
     }
 
     #endregion
@@ -54,6 +64,30 @@ public class ExplosiveProjectile : BaseProjectile
         if(_explosionSound != null)
         {
             _explosionSound.Play();
+        }
+
+        _direction = Vector3.zero;
+
+        if(_explosionParticles != null && _explosionSound != null)
+        {
+            StartCoroutine(DisableAfterEffects());
+        }
+        else
+        {
+            gameObject.SetActive(false);
+        }
+    }
+
+    protected IEnumerator DisableAfterEffects()
+    {
+        if (_meshRenderer != null)
+        {
+            _meshRenderer.enabled = false;
+        }
+
+        while (_explosionParticles.isPlaying || _explosionSound.isPlaying)
+        {
+            yield return null;
         }
 
         gameObject.SetActive(false);
