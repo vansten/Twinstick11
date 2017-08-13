@@ -25,7 +25,7 @@ public class ProjectileBasedWeapon : BaseWeapon
 
     protected void Awake()
     {
-        _projectilesPool.Init(_projectilePrefab, _projectileSpawnOrigin, GrowthStrategy.DoubleSize, 16);
+        _projectilesPool.Init(_projectilePrefab, _projectileSpawnOrigin, GrowthStrategy.DoubleSize, 8);
     }
 
     protected void Update()

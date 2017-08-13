@@ -8,6 +8,8 @@ public class BaseEnemy : MonoBehaviour, IDamagable
 
     [SerializeField]
     protected float _baseHP;
+    [SerializeField]
+    protected HitType _hitParticlesType;
 
     protected float _currentHP;
     
@@ -24,9 +26,10 @@ public class BaseEnemy : MonoBehaviour, IDamagable
 
     #region Methods
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(float damage, Vector3 hitPosition)
     {
         _currentHP -= damage;
+        GameController.Instance.SpawnHitParticlesAtPosition(_hitParticlesType, hitPosition);
         if (_currentHP <= 0.0f)
         {
             GameController.Instance.EnemySpawner.EnemyKilled(this);

@@ -15,6 +15,10 @@ public class ExplosiveProjectile : BaseProjectile
     protected MeshRenderer _meshRenderer;
     [SerializeField]
     protected float _explosionRange;
+    [SerializeField]
+    protected LayerMask _layersToAffect;
+
+    protected Collider _collider;
 
     #endregion
 
@@ -32,6 +36,12 @@ public class ExplosiveProjectile : BaseProjectile
         {
             _meshRenderer.enabled = true;
         }
+
+        if (_collider == null)
+        {
+            _collider = GetComponent<Collider>();
+        }
+        _collider.enabled = true;
     }
 
     #endregion
@@ -40,10 +50,7 @@ public class ExplosiveProjectile : BaseProjectile
 
     protected override void HandleCollision(Collider collider)
     {
-        int layerMask = 1 << LayerManager.Enemies;
-        layerMask |= 1 << LayerManager.Player;
-
-        Collider[] colliders = Physics.OverlapSphere(transform.position, _explosionRange, layerMask, QueryTriggerInteraction.Ignore);
+        Collider[] colliders = Physics.OverlapSphere(transform.position, _explosionRange, _layersToAffect.value, QueryTriggerInteraction.Ignore);
         if(colliders.Length > 0)
         {
             foreach (Collider col in colliders)
@@ -51,7 +58,7 @@ public class ExplosiveProjectile : BaseProjectile
                 IDamagable damagableObject = col.gameObject.GetComponent<IDamagable>();
                 if (damagableObject != null)
                 {
-                    damagableObject.TakeDamage(_damage);
+                    damagableObject.TakeDamage(_damage, col.transform.position);
                 }
             }
         }
@@ -83,6 +90,11 @@ public class ExplosiveProjectile : BaseProjectile
         if (_meshRenderer != null)
         {
             _meshRenderer.enabled = false;
+        }
+
+        if(_collider != null)
+        {
+            _collider.enabled = false;
         }
 
         while (_explosionParticles.isPlaying || _explosionSound.isPlaying)

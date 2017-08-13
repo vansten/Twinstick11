@@ -9,7 +9,7 @@ public enum GrowthStrategy
     DoubleSize,
 }
 
-public class ObjectPool<T> where T : MonoBehaviour
+public class ObjectPool<T> where T : Component
 {
     #region Variables
 
@@ -39,6 +39,19 @@ public class ObjectPool<T> where T : MonoBehaviour
         {
             if(!_spawnedObjects[i].gameObject.activeInHierarchy && _spawnedObjects[i].transform.parent == null)
             {
+                _spawnedObjects[i].transform.parent = _spawnedObjectsParent;
+            }
+        }
+    }
+
+    public void CollectInactiveObjects(Predicate<T> predicate)
+    {
+        int objectsCount = _spawnedObjects.Count;
+        for (int i = 0; i < objectsCount; ++i)
+        {
+            if (predicate(_spawnedObjects[i]))
+            {
+                _spawnedObjects[i].gameObject.SetActive(false);
                 _spawnedObjects[i].transform.parent = _spawnedObjectsParent;
             }
         }

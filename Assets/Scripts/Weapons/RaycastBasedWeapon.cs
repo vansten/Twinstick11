@@ -59,7 +59,10 @@ public class RaycastBasedWeapon : BaseWeapon
         
         if (!InputManager.IsShooting())
         {
-            _shoots -= 1;
+            if(_shoots > 0)
+            {
+                _shoots -= 1;
+            }
         }
 
         _overheated = _shoots >= _shootsBeforeOverheat;
@@ -100,6 +103,7 @@ public class RaycastBasedWeapon : BaseWeapon
         {
             initAngle = 0.0f;
         }
+
         for (int i = 0; i < _raycastCount; ++i)
         {
             Vector3 direction = Quaternion.Euler(0.0f, initAngle + i * angleDelta, 0.0f) * _raycastOrigin.forward;
@@ -112,9 +116,9 @@ public class RaycastBasedWeapon : BaseWeapon
         int layerMask = 1 << LayerManager.Enemies;
         layerMask |= 1 << LayerManager.Obstacles;
         Ray ray = new Ray(_raycastOrigin.position, direction);
-        Debug.DrawRay(ray.origin, ray.direction, Color.red, 5.0f);
         RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, float.MaxValue, layerMask))
+        Debug.DrawRay(ray.origin, ray.direction, Color.red, 2.0f);
+        if (Physics.Raycast(ray, out hit, float.MaxValue, layerMask, QueryTriggerInteraction.Ignore))
         {
             if (hit.collider == null)
             {
@@ -124,7 +128,12 @@ public class RaycastBasedWeapon : BaseWeapon
             IDamagable damagable = hit.collider.gameObject.GetComponent<IDamagable>();
             if(damagable != null)
             {
-                damagable.TakeDamage(_damage);
+                damagable.TakeDamage(_damage, hit.point);
+            }
+            else
+            {
+                //It's obstacle then
+                GameController.Instance.SpawnHitParticlesAtPosition(HitType.Metal, hit.point);
             }
         }
     }

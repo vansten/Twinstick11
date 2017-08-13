@@ -12,6 +12,19 @@ public enum GamePhase
     Count
 }
 
+public enum HitType
+{
+    Flesh,
+    Metal
+}
+
+[Serializable]
+public struct HitParticleInfo
+{
+    public HitType Type;
+    public ParticleSystem ParticlesPrefab;
+}
+
 public class GameController : MonoBehaviour
 {
     #region Singleton
@@ -45,9 +58,12 @@ public class GameController : MonoBehaviour
     public GameState GameState;
 
     [SerializeField]
+    protected List<HitParticleInfo> _hitParticles;
+    [SerializeField]
     protected List<BaseWeapon> _weapons;
 
     protected Dictionary<WeaponType, ObjectPool<BaseWeapon>> _weaponsPools;
+    protected Dictionary<HitType, ObjectPool<ParticleSystem>> _hitParticlesPools;
 
     #endregion
 
@@ -88,6 +104,14 @@ public class GameController : MonoBehaviour
             _weaponsPools.Add(_weapons[i].Type, new ObjectPool<BaseWeapon>());
             _weaponsPools[_weapons[i].Type].Init(_weapons[i], transform, GrowthStrategy.DoubleSize, 8);
         }
+
+        _hitParticlesPools = new Dictionary<HitType, ObjectPool<ParticleSystem>>();
+        int particlesCount = _hitParticles.Count;
+        for (int i = 0; i < particlesCount; ++i)
+        {
+            _hitParticlesPools.Add(_hitParticles[i].Type, new ObjectPool<ParticleSystem>());
+            _hitParticlesPools[_hitParticles[i].Type].Init(_hitParticles[i].ParticlesPrefab, transform);
+        }
     }
 
     protected void Start()
@@ -102,6 +126,11 @@ public class GameController : MonoBehaviour
         foreach(WeaponType weaponType in _weaponsPools.Keys)
         {
             _weaponsPools[weaponType].CollectInactiveObjects();
+        }
+
+        foreach (HitType hitType in _hitParticlesPools.Keys)
+        {
+            _hitParticlesPools[hitType].CollectInactiveObjects((particleObject) => { return particleObject != null && !particleObject.isPlaying; });
         }
     }
 
@@ -135,6 +164,13 @@ public class GameController : MonoBehaviour
         }
 
         return null;
+    }
+
+    public void SpawnHitParticlesAtPosition(HitType hitType, Vector3 position)
+    {
+        ParticleSystem particles = _hitParticlesPools[hitType].GetObject(null);
+        particles.transform.position = position;
+        particles.Play();
     }
 
     #endregion

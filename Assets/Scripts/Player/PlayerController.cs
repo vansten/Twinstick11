@@ -5,6 +5,12 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour, IDamagable
 {
+    #region Consts and statics
+
+    protected static string SpeedName = "Speed";
+
+    #endregion
+
     #region Variables
 
     [SerializeField]
@@ -13,7 +19,10 @@ public class PlayerController : MonoBehaviour, IDamagable
     protected float _speed;
     [SerializeField]
     protected float _baseHP;
+    [SerializeField]
+    protected WeaponType _startWeapon;
 
+    protected Animator _animator;
     protected Vector3 _startPosition;
 
     #endregion
@@ -85,6 +94,7 @@ public class PlayerController : MonoBehaviour, IDamagable
     {
         GameController.Instance.OnGamePhaseChanged += OnGamePhaseChangedCallback;
         _startPosition = transform.position;
+        _animator = GetComponent<Animator>();
     }
 
     protected void Start()
@@ -125,14 +135,19 @@ public class PlayerController : MonoBehaviour, IDamagable
         CurrentEquippedWeapon = weapon;
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(float damage, Vector3 hitPosition)
     {
+        GameController.Instance.SpawnHitParticlesAtPosition(HitType.Flesh, hitPosition);
         CurrentHP -= damage;
     }
 
     protected void ProcessTransform()
     {
-        transform.position += InputManager.GetMovementDirection() * _speed * Time.deltaTime;
+        Vector3 translation = InputManager.GetMovementDirection() * _speed * Time.deltaTime;
+
+        _animator.SetFloat(SpeedName, translation.magnitude);
+
+        transform.position += translation;
         Vector3 forward = InputManager.GetForwardDirection() + InputManager.GetObjectToMouseDirection(transform.position);
         if(forward.magnitude > 0.001f)
         {
@@ -155,15 +170,8 @@ public class PlayerController : MonoBehaviour, IDamagable
         {
             transform.position = _startPosition;
             CurrentHP = _baseHP;
-            if (CurrentEquippedWeapon == null || CurrentEquippedWeapon.Type != WeaponType.Pistol)
-            {
-                if (CurrentEquippedWeapon != null)
-                {
-                    CurrentEquippedWeapon.gameObject.SetActive(false);
-                    CurrentEquippedWeapon = null;
-                }
-                CurrentEquippedWeapon = GameController.Instance.CreateWeapon(WeaponType.Pistol, _weaponParent);
-            }
+            BaseWeapon weapon = GameController.Instance.CreateWeapon(_startWeapon, _weaponParent);
+            EquipWeapon(weapon);
         }
     }
 

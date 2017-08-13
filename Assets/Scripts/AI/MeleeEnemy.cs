@@ -7,7 +7,8 @@ public class MeleeEnemy : BaseEnemy
 {
     #region Const and statics
 
-    public static float ChasingDistance = 3.0f;
+    public static string AttackTriggerName = "Attack";
+    public static string SpeedName = "Speed";
 
     #endregion
 
@@ -15,6 +16,8 @@ public class MeleeEnemy : BaseEnemy
 
     public float Damage;
     public float Speed;
+    public float ChasingDistance;
+    public List<EnemyAttackPoint> AttackPoints;
     
     #endregion
 
@@ -32,6 +35,12 @@ public class MeleeEnemy : BaseEnemy
         get { return _stateMachine; }
     }
 
+    protected Animator _animator;
+    public Animator Animator
+    {
+        get { return _animator; }
+    }
+
     #endregion
 
     #region Unity methods
@@ -39,6 +48,8 @@ public class MeleeEnemy : BaseEnemy
     protected override void OnEnable()
     {
         base.OnEnable();
+
+        _animator = GetComponent<Animator>();
 
         _navMeshAgent = GetComponent<UnityEngine.AI.NavMeshAgent>();
         _navMeshAgent.speed = Speed;
@@ -51,8 +62,21 @@ public class MeleeEnemy : BaseEnemy
         _stateMachine.ChangeState<MeleeEnemyStates.ChasePlayer>();
     }
 
+    protected void Awake()
+    {
+        foreach(EnemyAttackPoint attackPoint in AttackPoints)
+        {
+            attackPoint.SetEnemy(this);
+        }
+    }
+
     protected void Update()
     {
+        if(Animator != null)
+        {
+            Animator.SetFloat(SpeedName, NavMeshAgent.velocity.magnitude);
+        }
+
         if(_stateMachine != null)
         {
             _stateMachine.Update(Time.deltaTime);
@@ -63,9 +87,28 @@ public class MeleeEnemy : BaseEnemy
 
     #region Methods
 
-    public void NotifyAttackPlayer(PlayerController player)
+    public void NotifyAttackPlayer(PlayerController player, Vector3 hitPosition)
     {
-        player.TakeDamage(Damage);
+        if(player != null)
+        {
+            player.TakeDamage(Damage, hitPosition);
+        }
+    }
+
+    public void NotifyEnableAttackPoints()
+    {
+        foreach(EnemyAttackPoint attackPoint in AttackPoints)
+        {
+            attackPoint.enabled = true;
+        }
+    }
+
+    public void NotifyDisableAttackPoints()
+    {
+        foreach (EnemyAttackPoint attackPoint in AttackPoints)
+        {
+            attackPoint.enabled = false;
+        }
     }
 
     #endregion
@@ -79,11 +122,15 @@ namespace MeleeEnemyStates
         {
             owner.NavMeshAgent.SetDestination(GameController.Instance.Player.transform.position);
             owner.NavMeshAgent.speed = owner.Speed;
+            owner.NavMeshAgent.stoppingDistance = owner.ChasingDistance;
             owner.NavMeshAgent.isStopped = false;
+
+            owner.NotifyDisableAttackPoints();
         }
 
         public override void OnExit(MeleeEnemy owner)
         {
+            owner.NavMeshAgent.velocity = Vector3.zero;
             owner.NavMeshAgent.isStopped = true;
         }
 
@@ -93,7 +140,7 @@ namespace MeleeEnemyStates
 
             Vector3 difference = GameController.Instance.Player.transform.position - owner.transform.position;
             difference.y = 0.0f;
-            if (difference.magnitude < MeleeEnemy.ChasingDistance)
+            if (difference.magnitude < owner.ChasingDistance)
             {
                 owner.StateMachine.ChangeState<Attack>();
             }
@@ -105,21 +152,23 @@ namespace MeleeEnemyStates
         public override void OnEnter(MeleeEnemy owner)
         {
             owner.NavMeshAgent.speed = 0.0f;
-            owner.NotifyAttackPlayer(GameController.Instance.Player);
+            owner.Animator.SetBool(MeleeEnemy.AttackTriggerName, true);
         }
 
         public override void OnExit(MeleeEnemy owner)
         {
+            owner.Animator.SetBool(MeleeEnemy.AttackTriggerName, false);
         }
 
         public override void Update(MeleeEnemy owner, float deltaSeconds)
         {
-            Vector3 direction = owner.transform.position - GameController.Instance.Player.transform.position;
+            Vector3 direction = GameController.Instance.Player.transform.position - owner.transform.position;
             direction.y = 0.0f;
-            if(direction.magnitude > MeleeEnemy.ChasingDistance)
+            if(direction.magnitude > owner.ChasingDistance * 1.2f)
             {
                 owner.StateMachine.ChangeState<ChasePlayer>();
             }
+            owner.transform.forward = direction.normalized;
         }
     }
 }
