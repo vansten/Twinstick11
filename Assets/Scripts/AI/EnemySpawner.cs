@@ -50,7 +50,7 @@ public class EnemySpawner : MonoBehaviour
         for(int i = 0; i < enemiesCount; ++i)
         {
             float chance = _enemiesPrefabs[i].SpawnChance;
-            if (Mathf.Approximately(sum + chance, 1.0f))
+            if (sum + chance > 1.0f)
             {
                 _enemiesPrefabs[i].SpawnChance = 1.0f - sum;
             }

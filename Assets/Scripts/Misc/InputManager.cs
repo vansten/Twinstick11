@@ -4,7 +4,13 @@ using UnityEngine;
 
 public class InputManager
 {
+    #region Consts and statics
+
     protected static Vector3 _lastMousePosition;
+
+    #endregion
+
+    #region Methods
 
     public static bool IsShooting()
     {
@@ -21,7 +27,7 @@ public class InputManager
         return new Vector3(Input.GetAxis("RotationX"), 0.0f, Input.GetAxis("RotationY")).normalized;
     }
 
-    public static Vector3 GetObjectToMouseDirection(Vector3 objectWorldPosition)
+    public static Vector3 GetMouseForward(Vector3 objectWorldPosition)
     {
         Vector3 objectScreenPosition = Camera.main.WorldToScreenPoint(objectWorldPosition);
         Vector3 currentMousePosition = Input.mousePosition;
@@ -35,4 +41,6 @@ public class InputManager
         _lastMousePosition = Input.mousePosition;
         return difference.normalized;
     }
+
+    #endregion
 }

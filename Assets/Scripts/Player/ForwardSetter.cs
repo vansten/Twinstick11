@@ -8,9 +8,7 @@ public class ForwardSetter : MonoBehaviour
 
     protected void LateUpdate()
     {
-        Vector3 forward = transform.forward;
-        forward.y = 0.0f;
-        transform.forward = forward.normalized;
+        transform.rotation = Quaternion.Euler(0.0f, transform.parent.rotation.eulerAngles.y, 0.0f);
     }
 
     #endregion  

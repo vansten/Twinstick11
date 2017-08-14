@@ -117,7 +117,6 @@ public class RaycastBasedWeapon : BaseWeapon
         layerMask |= 1 << LayerManager.Obstacles;
         Ray ray = new Ray(_raycastOrigin.position, direction);
         RaycastHit hit;
-        Debug.DrawRay(ray.origin, ray.direction, Color.red, 2.0f);
         if (Physics.Raycast(ray, out hit, float.MaxValue, layerMask, QueryTriggerInteraction.Ignore))
         {
             if (hit.collider == null)

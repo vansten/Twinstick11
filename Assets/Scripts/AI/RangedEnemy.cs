@@ -108,7 +108,30 @@ public class RangedEnemy : BaseEnemy
         Vector3 playerPosition = GameController.Instance.Player.transform.position;
         Vector3 playerToMe = transform.position - playerPosition;
         playerToMe.y = 0.0f;
-        return playerPosition + playerToMe.normalized * TargetRangeDistance;
+        bool done = false;
+        int repeatCount = 0;
+        Ray ray = new Ray(playerPosition, playerToMe.normalized);
+        int[] multipliers = new int[13] { 0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6 };
+        while(!done && repeatCount < multipliers.Length)
+        {
+            ray.direction = (Quaternion.Euler(0.0f, multipliers[repeatCount] * 30.0f, 0.0f) * playerToMe).normalized;
+            if(!Physics.Raycast(ray, playerToMe.magnitude, 1 << LayerManager.Obstacles, QueryTriggerInteraction.Ignore))
+            {
+                done = true;
+            }
+            ++repeatCount;
+        }
+
+        return ray.origin + ray.direction * TargetRangeDistance;
+    }
+
+    public bool IsTargetVisible()
+    {
+        Vector3 playerPosition = GameController.Instance.Player.transform.position;
+        Vector3 playerToMe = transform.position - playerPosition;
+        playerToMe.y = 0.0f;
+        Ray ray = new Ray(playerPosition, playerToMe.normalized);
+        return !Physics.Raycast(ray, playerToMe.magnitude, 1 << LayerManager.Obstacles, QueryTriggerInteraction.Ignore);
     }
 
     #endregion
@@ -139,7 +162,7 @@ namespace RangedEnemyStates
 
             Vector3 toPlayer = GameController.Instance.Player.transform.position - owner.transform.position;
             toPlayer.y = 0.0f;
-            if (toPlayer.magnitude <= owner.TargetRangeDistance && toPlayer.magnitude >= owner.TargetRangeDistance * 0.6f)
+            if (toPlayer.magnitude <= owner.TargetRangeDistance && toPlayer.magnitude >= owner.TargetRangeDistance * 0.6f && owner.IsTargetVisible())
             {
                 owner.StateMachine.ChangeState<RotateTowerToPlayer>();
             }
@@ -207,6 +230,12 @@ namespace RangedEnemyStates
                 if (Quaternion.Angle(owner.Tower.rotation, targetRotation) > owner.MaxTowerAngleDifference)
                 {
                     owner.StateMachine.ChangeState<RotateTowerToPlayer>();
+                    return;
+                }
+
+                if(!owner.IsTargetVisible())
+                {
+                    owner.StateMachine.ChangeState<MoveToPosition>();
                     return;
                 }
             }

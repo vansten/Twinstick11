@@ -23,6 +23,7 @@ public class PlayerController : MonoBehaviour, IDamagable
     protected WeaponType _startWeapon;
 
     protected Animator _animator;
+    protected Rigidbody _rigidbody;
     protected Vector3 _startPosition;
 
     #endregion
@@ -43,6 +44,7 @@ public class PlayerController : MonoBehaviour, IDamagable
 
                 if (_currentHP <= 0.0f)
                 {
+                    _animator.SetFloat(SpeedName, 0.0f);
                     GameController.Instance.CurrentPhase = GamePhase.DeathScreen;
                 }
 
@@ -95,6 +97,7 @@ public class PlayerController : MonoBehaviour, IDamagable
         GameController.Instance.OnGamePhaseChanged += OnGamePhaseChangedCallback;
         _startPosition = transform.position;
         _animator = GetComponent<Animator>();
+        _rigidbody = GetComponent<Rigidbody>();
     }
 
     protected void Start()
@@ -102,11 +105,16 @@ public class PlayerController : MonoBehaviour, IDamagable
         CurrentHP = _baseHP;
     }
 
+    protected void FixedUpdate()
+    {
+        //_rigidbody.velocity = Vector3.zero;
+
+        ProcessTransform();
+    }
+
     protected void Update()
     {
-        ProcessTransform();
-
-        if(_currentEquippedWeapon != null)
+        if (_currentEquippedWeapon != null)
         {
             ProcessShoot();
         }
@@ -131,7 +139,7 @@ public class PlayerController : MonoBehaviour, IDamagable
 
         weapon.transform.parent = _weaponParent;
         weapon.transform.localPosition = Vector3.zero;
-        weapon.transform.localRotation = Quaternion.identity;
+        weapon.transform.forward = _weaponParent.forward;
         CurrentEquippedWeapon = weapon;
     }
 
@@ -143,12 +151,12 @@ public class PlayerController : MonoBehaviour, IDamagable
 
     protected void ProcessTransform()
     {
-        Vector3 translation = InputManager.GetMovementDirection() * _speed * Time.deltaTime;
+        Vector3 translation = InputManager.GetMovementDirection() * _speed * Time.fixedDeltaTime;
 
         _animator.SetFloat(SpeedName, translation.magnitude);
 
         transform.position += translation;
-        Vector3 forward = InputManager.GetForwardDirection() + InputManager.GetObjectToMouseDirection(transform.position);
+        Vector3 forward = InputManager.GetForwardDirection() + InputManager.GetMouseForward(transform.position);
         if(forward.magnitude > 0.001f)
         {
             transform.forward = forward;

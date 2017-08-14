@@ -123,7 +123,16 @@ public class GameController : MonoBehaviour
 
     protected void Update()
     {
-        foreach(WeaponType weaponType in _weaponsPools.Keys)
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
+
+        foreach (WeaponType weaponType in _weaponsPools.Keys)
         {
             _weaponsPools[weaponType].CollectInactiveObjects();
         }
@@ -134,9 +143,9 @@ public class GameController : MonoBehaviour
         }
     }
 
-    #endregion
+#endregion
 
-    #region Methods
+#region Methods
 
     public BaseWeapon CreateWeapon(Transform transform)
     {
@@ -173,5 +182,5 @@ public class GameController : MonoBehaviour
         particles.Play();
     }
 
-    #endregion
+#endregion
 }
