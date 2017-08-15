@@ -5,15 +5,14 @@ using UnityEngine;
 public class Crosshair : MonoBehaviour
 {
     #region Variables
-    
+
     [SerializeField]
-    protected float _maxOffset;
+    protected Transform _target;
     [SerializeField]
-    protected float _mouseSpeed;
-    [SerializeField]
-    protected float _gamepadSpeed;
+    protected float _gamepadOffset;
 
     protected Vector3 _offset;
+    protected Vector3 _targetCursorOffset;
 
     #endregion
 
@@ -27,9 +26,23 @@ public class Crosshair : MonoBehaviour
 
     protected void LateUpdate()
     {
-        _offset += (InputManager.GetCrosshairMovement() * _gamepadSpeed + InputManager.GetMouseCrosshairMovement() * _mouseSpeed) * Time.deltaTime;
-        _offset = Vector3.ClampMagnitude(_offset, _maxOffset);
-        transform.position = GameController.Instance.Player.transform.position + _offset;
+        Vector3 gamepadInput = InputManager.GetCrosshairMovement();
+        if(gamepadInput.magnitude > 0.1f)
+        {
+            _targetCursorOffset = gamepadInput.normalized * _gamepadOffset;
+        }
+        else
+        {
+            if (InputManager.GetMouseCrosshairMovement().magnitude > 0)
+            {
+                Vector3 currentWorldPosition = GetGroundPosition(Input.mousePosition);
+                _targetCursorOffset = currentWorldPosition - _target.position;
+            }
+        }
+
+        _offset = Vector3.Lerp(_offset, _targetCursorOffset, 0.3f);
+
+        transform.position = _target.position + _offset;
     }
 
     #endregion
@@ -41,8 +54,22 @@ public class Crosshair : MonoBehaviour
         enabled = gamePhase == GamePhase.Game;
         if(enabled)
         {
-            _offset = Vector3.forward;
+            _offset = Vector3.forward * _gamepadOffset;
+            _targetCursorOffset = _offset;
         }
+    }
+
+    protected Vector3 GetGroundPosition(Vector3 screenPosition)
+    {
+        screenPosition.z = 1.0f;
+        Ray ray = Camera.main.ScreenPointToRay(screenPosition);
+        RaycastHit hit;
+        if(Physics.Raycast(ray, out hit, float.MaxValue, 1 << LayerManager.Ground, QueryTriggerInteraction.Ignore))
+        {
+            return hit.point;
+        }
+
+        return Vector3.zero;
     }
 
     #endregion

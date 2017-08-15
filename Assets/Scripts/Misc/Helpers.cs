@@ -74,4 +74,17 @@ public struct LayerManager
             return _obstacles;
         }
     }
+
+    private static int _ground = -1;
+    public static int Ground
+    {
+        get
+        {
+            if (_ground == -1)
+            {
+                _ground = LayerMask.NameToLayer("Ground");
+            }
+            return _ground;
+        }
+    }
 }

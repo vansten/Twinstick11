@@ -112,6 +112,8 @@ public class GameController : MonoBehaviour
             _hitParticlesPools.Add(_hitParticles[i].Type, new ObjectPool<ParticleSystem>());
             _hitParticlesPools[_hitParticles[i].Type].Init(_hitParticles[i].ParticlesPrefab, transform);
         }
+
+        InputManager.Init();
     }
 
     protected void Start()

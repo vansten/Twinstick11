@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class InputManager
 {
     #region Consts and statics
 
-    protected static Vector3 _lastMousePosition;
+    public static Vector3 LastMousePosition;
 
     protected static float _deadzoneX = 0.2f;
     protected static float _deadzoneZ = 0.2f;
@@ -16,6 +17,11 @@ public class InputManager
     #endregion
 
     #region Methods
+
+    public static void Init()
+    {
+        LastMousePosition = Input.mousePosition;
+    }
 
     public static bool IsShooting()
     {
@@ -43,15 +49,9 @@ public class InputManager
     public static Vector3 GetMouseCrosshairMovement()
     {
         Vector3 currentMousePosition = Input.mousePosition;
-        Vector3 difference = currentMousePosition - _lastMousePosition;
-        if((currentMousePosition - _lastMousePosition).magnitude <= 1)
-        {
-            difference = Vector3.zero;
-        }
-        difference.z = difference.y;
-        difference.y = 0.0f;
-        _lastMousePosition = Input.mousePosition;
-        return Vector3.ClampMagnitude(difference, 1.0f);
+        Vector3 difference = currentMousePosition - LastMousePosition;
+        LastMousePosition = Input.mousePosition;
+        return difference;
     }
 
     #endregion
