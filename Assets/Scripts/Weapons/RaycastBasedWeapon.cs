@@ -111,6 +111,15 @@ public class RaycastBasedWeapon : BaseWeapon
         }
     }
 
+    public override float GetReadyPercent()
+    {
+        if(_shootsBeforeOverheat > 0)
+        {
+            return 1.0f - (float)_shoots / (float)_shootsBeforeOverheat;
+        }
+        return 1.0f;
+    }
+
     protected void TryKillByRaycast(Vector3 startPosition, Vector3 direction)
     {
         int layerMask = 1 << LayerManager.Enemies;

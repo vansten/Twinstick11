@@ -19,9 +19,9 @@ public class EnemyAttackPoint : MonoBehaviour
             return;
         }
 
-        if(other.gameObject.layer == LayerManager.Player)
+        if (other.gameObject.layer == LayerManager.Player)
         {
-            if(_enemy != null)
+            if (_enemy != null)
             {
                 _enemy.NotifyAttackPlayer(other.gameObject.GetComponent<PlayerController>(), other.transform.position);
             }

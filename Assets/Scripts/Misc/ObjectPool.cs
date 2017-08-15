@@ -37,7 +37,7 @@ public class ObjectPool<T> where T : Component
         int objectsCount = _spawnedObjects.Count;
         for(int i = 0; i < objectsCount; ++i)
         {
-            if(!_spawnedObjects[i].gameObject.activeInHierarchy && _spawnedObjects[i].transform.parent == null)
+            if(!_spawnedObjects[i].gameObject.activeInHierarchy)
             {
                 _spawnedObjects[i].transform.parent = _spawnedObjectsParent;
             }

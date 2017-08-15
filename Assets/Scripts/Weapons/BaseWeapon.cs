@@ -30,6 +30,7 @@ public abstract class BaseWeapon : MonoBehaviour
     #region Methods
 
     public abstract void Shoot();
+    public abstract float GetReadyPercent();
 
     protected void SpawnShootEffects()
     {

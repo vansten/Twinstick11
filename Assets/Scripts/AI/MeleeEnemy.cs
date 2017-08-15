@@ -87,6 +87,11 @@ public class MeleeEnemy : BaseEnemy
 
     #region Methods
 
+    public override void SetPosition(Vector3 newPosition)
+    {
+        NavMeshAgent.Warp(newPosition);
+    }
+
     public void NotifyAttackPlayer(PlayerController player, Vector3 hitPosition)
     {
         if(player != null)

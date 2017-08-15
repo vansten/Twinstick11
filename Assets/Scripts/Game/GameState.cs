@@ -27,16 +27,13 @@ public class GameState
         }
         set
         {
-            if (_currentWave != value)
+            _currentWave = value;
+
+            EnemiesLeft = _firstWaveEnemiesCount + (_currentWave - 1) * _enemiesCountChangeRate;
+
+            if (OnCurrentWaveChanged != null)
             {
-                _currentWave = value;
-
-                EnemiesLeft = _firstWaveEnemiesCount + (_currentWave - 1) * _enemiesCountChangeRate;
-
-                if (OnCurrentWaveChanged != null)
-                {
-                    OnCurrentWaveChanged(_currentWave);
-                }
+                OnCurrentWaveChanged(_currentWave);
             }
         }
     }

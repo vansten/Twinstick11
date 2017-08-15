@@ -103,6 +103,11 @@ public class RangedEnemy : BaseEnemy
 
     #region Methods
 
+    public override void SetPosition(Vector3 newPosition)
+    {
+        NavMeshAgent.Warp(newPosition);
+    }
+
     public Vector3 GetTargetPosition()
     {
         Vector3 playerPosition = GameController.Instance.Player.transform.position;
@@ -115,7 +120,7 @@ public class RangedEnemy : BaseEnemy
         while(!done && repeatCount < multipliers.Length)
         {
             ray.direction = (Quaternion.Euler(0.0f, multipliers[repeatCount] * 30.0f, 0.0f) * playerToMe).normalized;
-            if(!Physics.Raycast(ray, playerToMe.magnitude, 1 << LayerManager.Obstacles, QueryTriggerInteraction.Ignore))
+            if(!IsObscured(ray.origin, ray.direction, playerToMe.magnitude))
             {
                 done = true;
             }
@@ -131,7 +136,12 @@ public class RangedEnemy : BaseEnemy
         Vector3 playerToMe = transform.position - playerPosition;
         playerToMe.y = 0.0f;
         Ray ray = new Ray(playerPosition, playerToMe.normalized);
-        return !Physics.Raycast(ray, playerToMe.magnitude, 1 << LayerManager.Obstacles, QueryTriggerInteraction.Ignore);
+        return !IsObscured(ray.origin, ray.direction, playerToMe.magnitude);
+    }
+
+    protected bool IsObscured(Vector3 origin, Vector3 direction, float maxDistance)
+    {
+        return Physics.BoxCast(origin, Vector3.one, direction, Quaternion.identity, maxDistance, 1 << LayerManager.Obstacles, QueryTriggerInteraction.Ignore);
     }
 
     #endregion
@@ -141,11 +151,16 @@ namespace RangedEnemyStates
 {
     public class MoveToPosition : AI.StateMachine<RangedEnemy>.State
     {
+        protected const float _recalculatePathCooldown = 0.5f;
+        protected float _timer = 0.0f;
+
         public override void OnEnter(RangedEnemy owner)
         {
             owner.NavMeshAgent.SetDestination(owner.GetTargetPosition());
             owner.NavMeshAgent.speed = owner.Speed;
             owner.NavMeshAgent.isStopped = false;
+
+            _timer = 0.0f;
         }
 
         public override void OnExit(RangedEnemy owner)
@@ -156,7 +171,11 @@ namespace RangedEnemyStates
 
         public override void Update(RangedEnemy owner, float deltaSeconds)
         {
-            owner.NavMeshAgent.SetDestination(owner.GetTargetPosition());
+            _timer += deltaSeconds;
+            if (_timer >= _recalculatePathCooldown)
+            {
+                owner.NavMeshAgent.SetDestination(owner.GetTargetPosition());
+            }
 
             owner.Tower.localRotation = Quaternion.RotateTowards(owner.Tower.localRotation, owner.TowerInitialLocalRotation, deltaSeconds * owner.TowerRotationSpeed);
 

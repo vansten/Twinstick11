@@ -26,6 +26,8 @@ public class CameraController : MonoBehaviour
 
     [SerializeField]
     protected Transform _target;
+    [SerializeField]
+    protected Transform _crosshair;
 
     protected List<MeshRenderer> _obscuringMeshes = new List<MeshRenderer>();
 
@@ -55,7 +57,7 @@ public class CameraController : MonoBehaviour
     protected void LateUpdate()
     {
         Vector3 targetPosition = _target.position + _offset * -transform.forward;
-        transform.position = Vector3.Slerp(transform.position, targetPosition, _cameraSpeed);
+        transform.position = Vector3.Lerp(transform.position, targetPosition, _cameraSpeed);
     }
 
     #endregion
@@ -64,7 +66,8 @@ public class CameraController : MonoBehaviour
 
     protected void ProcessObscurance()
     {
-        List<MeshRenderer> meshes = GetAllObstaclesObscuringTarget();
+        List<MeshRenderer> meshes = GetAllObstaclesObscuringTarget(_target);
+        meshes.AddRange(GetAllObstaclesObscuringTarget(_crosshair));
         List<MeshRenderer> toRemove = new List<MeshRenderer>();
         foreach(MeshRenderer mr in _obscuringMeshes)
         {
@@ -103,11 +106,11 @@ public class CameraController : MonoBehaviour
         }
     }
 
-    protected List<MeshRenderer> GetAllObstaclesObscuringTarget()
+    protected List<MeshRenderer> GetAllObstaclesObscuringTarget(Transform target)
     {
         List<MeshRenderer> toReturn = new List<MeshRenderer>();
 
-        Vector3 direction = (_target.position - transform.position);
+        Vector3 direction = (target.position - transform.position);
         Ray ray = new Ray(transform.position, direction.normalized);
         RaycastHit[] hits = Physics.RaycastAll(ray, direction.magnitude, _obscuringLayers.value, QueryTriggerInteraction.Ignore);
         if(hits.Length > 0)

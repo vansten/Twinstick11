@@ -4,12 +4,20 @@ using UnityEngine;
 
 public class BaseEnemy : MonoBehaviour, IDamagable
 {
+    #region Consts and statics
+
+    protected static string MixName = "_Mix";
+
+    #endregion
+
     #region Variables
 
     [SerializeField]
     protected float _baseHP;
     [SerializeField]
     protected HitType _hitParticlesType;
+    [SerializeField]
+    protected MeshRenderer[] _renderers;
 
     protected float _currentHP;
     
@@ -20,6 +28,7 @@ public class BaseEnemy : MonoBehaviour, IDamagable
     protected virtual void OnEnable()
     {
         _currentHP = _baseHP;
+        SetMaterialMix(0.0f);
     }
 
     #endregion
@@ -34,6 +43,28 @@ public class BaseEnemy : MonoBehaviour, IDamagable
         {
             GameController.Instance.EnemySpawner.EnemyKilled(this);
         }
+
+        float percent = _currentHP / _baseHP;
+        SetMaterialMix(1.0f - percent);
+    }
+
+    public virtual void SetPosition(Vector3 newPosition)
+    {
+        transform.position = newPosition;
+    }
+
+    protected void SetMaterialMix(float mix)
+    {
+        foreach (MeshRenderer mr in _renderers)
+        {
+            mr.material.SetFloat(MixName, mix);
+        }
+    }
+
+    [ContextMenu("Set renderers")]
+    protected void SetRenderers()
+    {
+        _renderers = GetComponentsInChildren<MeshRenderer>();
     }
 
     #endregion

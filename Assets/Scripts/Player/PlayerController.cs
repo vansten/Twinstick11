@@ -8,6 +8,9 @@ public class PlayerController : MonoBehaviour, IDamagable
     #region Consts and statics
 
     protected static string SpeedName = "Speed";
+    protected static string DirectionName = "Direction";
+
+    protected static float onePer360 = 1.0f / 360.0f;
 
     #endregion
 
@@ -15,6 +18,8 @@ public class PlayerController : MonoBehaviour, IDamagable
 
     [SerializeField]
     protected Transform _weaponParent;
+    [SerializeField]
+    protected Transform _crosshair;
     [SerializeField]
     protected float _speed;
     [SerializeField]
@@ -107,7 +112,7 @@ public class PlayerController : MonoBehaviour, IDamagable
 
     protected void FixedUpdate()
     {
-        //_rigidbody.velocity = Vector3.zero;
+        _rigidbody.velocity = Vector3.zero;
 
         ProcessTransform();
     }
@@ -143,6 +148,12 @@ public class PlayerController : MonoBehaviour, IDamagable
         CurrentEquippedWeapon = weapon;
     }
 
+    public void EquipBaseWeapon()
+    {
+        BaseWeapon weapon = GameController.Instance.CreateWeapon(_startWeapon, _weaponParent);
+        StartCoroutine(WaitToEquipBaseWeapon(weapon, 0.5f));
+    }
+
     public void TakeDamage(float damage, Vector3 hitPosition)
     {
         GameController.Instance.SpawnHitParticlesAtPosition(HitType.Flesh, hitPosition);
@@ -152,14 +163,26 @@ public class PlayerController : MonoBehaviour, IDamagable
     protected void ProcessTransform()
     {
         Vector3 translation = InputManager.GetMovementDirection() * _speed * Time.fixedDeltaTime;
-
-        _animator.SetFloat(SpeedName, translation.magnitude);
-
         transform.position += translation;
-        Vector3 forward = InputManager.GetForwardDirection() + InputManager.GetMouseForward(transform.position);
+
+        Vector3 forward = _crosshair.position - transform.position;
+        forward.y = 0.0f;
         if(forward.magnitude > 0.001f)
         {
-            transform.forward = forward;
+            transform.forward = forward.normalized;
+        }
+
+        float effectiveSpeed = translation.magnitude;
+        _animator.SetFloat(SpeedName, effectiveSpeed);
+        if (effectiveSpeed > 0.0f)
+        {
+            //Calculate angle between translation and forward
+            float directionAngle = Vector3.Angle(translation, transform.forward);
+            //Give it a sign (from [0, 180] to [-180, 180]) based on cross product y (y is always up)
+            directionAngle *= Mathf.Sign(Vector3.Cross(translation, transform.forward).y);
+            //Translate from [-180, 180] to [0, 1]
+            directionAngle = (directionAngle + 180.0f) * onePer360;
+            _animator.SetFloat(DirectionName, directionAngle);
         }
     }
 
@@ -178,9 +201,14 @@ public class PlayerController : MonoBehaviour, IDamagable
         {
             transform.position = _startPosition;
             CurrentHP = _baseHP;
-            BaseWeapon weapon = GameController.Instance.CreateWeapon(_startWeapon, _weaponParent);
-            EquipWeapon(weapon);
+            EquipBaseWeapon();
         }
+    }
+
+    protected IEnumerator WaitToEquipBaseWeapon(BaseWeapon weapon, float delay = 0.5f)
+    {
+        yield return new WaitForSecondsRealtime(delay);
+        EquipWeapon(weapon);
     }
 
     #endregion

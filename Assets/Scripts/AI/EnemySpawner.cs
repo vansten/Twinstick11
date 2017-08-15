@@ -94,7 +94,7 @@ public class EnemySpawner : MonoBehaviour
             if(random <= enemySpawnInfo.SpawnChance + sum)
             {
                 BaseEnemy newEnemy = enemySpawnInfo.GetEnemy(transform);
-                newEnemy.transform.position = GetRandomPosition();
+                newEnemy.SetPosition(GetRandomPosition());
                 --_enemiesToSpawn;
                 return;
             }

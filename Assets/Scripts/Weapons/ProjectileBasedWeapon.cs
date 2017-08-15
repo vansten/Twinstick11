@@ -15,9 +15,12 @@ public class ProjectileBasedWeapon : BaseWeapon
     protected float _projectileSpeed;
     [SerializeField]
     protected float _shootDelay;
+    [SerializeField]
+    protected uint _projectileCount;
 
     protected ObjectPool<BaseProjectile> _projectilesPool = new ObjectPool<BaseProjectile>();
     protected float _lastShootTime;
+    protected uint _projectilesLeft;
 
     #endregion
 
@@ -25,7 +28,12 @@ public class ProjectileBasedWeapon : BaseWeapon
 
     protected void Awake()
     {
-        _projectilesPool.Init(_projectilePrefab, _projectileSpawnOrigin, GrowthStrategy.DoubleSize, 8);
+        _projectilesPool.Init(_projectilePrefab, _projectileSpawnOrigin, GrowthStrategy.DoubleSize, (int)_projectileCount);
+    }
+
+    protected void OnEnable()
+    {
+        _projectilesLeft = _projectileCount;
     }
 
     protected void Update()
@@ -52,6 +60,17 @@ public class ProjectileBasedWeapon : BaseWeapon
         BaseProjectile projectile = _projectilesPool.GetObject(_projectileSpawnOrigin);
         projectile.transform.localScale = _projectilePrefab.transform.localScale;
         projectile.Shoot(_projectileSpawnOrigin.forward, _projectileSpeed, _damage);
+
+        --_projectilesLeft;
+        if(_projectilesLeft == 0)
+        {
+            GameController.Instance.Player.EquipBaseWeapon();
+        }
+    }
+
+    public override float GetReadyPercent()
+    {
+        return (float)_projectilesLeft / (float)_projectileCount;
     }
 
     #endregion

@@ -1,10 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class RenderOnDemand : MonoBehaviour
 {
+#if UNITY_EDITOR
     [ContextMenu("Render")]
     void Render()
     {
@@ -26,4 +29,5 @@ public class RenderOnDemand : MonoBehaviour
         System.IO.File.WriteAllBytes(Application.persistentDataPath + "/p.png", bytes);
         Debug.Log("Written to: " + Application.persistentDataPath + "/p.png");
     }
+#endif
 }

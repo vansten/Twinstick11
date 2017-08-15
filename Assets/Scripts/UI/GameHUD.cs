@@ -21,6 +21,8 @@ public class GameHUD : MonoBehaviour
     protected UnityEngine.UI.Text _currentWaveText;
     [SerializeField]
     protected UnityEngine.UI.Text _enemiesLeftText;
+    [SerializeField]
+    protected UnityEngine.UI.Image _readyBar;
 
     [SerializeField]
     protected List<WeaponInfo> _weaponsInfo;
@@ -59,6 +61,19 @@ public class GameHUD : MonoBehaviour
     private void OnApplicationQuit()
     {
         _isAppQuiting = true;
+    }
+
+    protected void Update()
+    {
+        BaseWeapon weapon = GameController.Instance.Player.CurrentEquippedWeapon;
+        if(weapon != null)
+        {
+            _readyBar.fillAmount = weapon.GetReadyPercent();
+        }
+        else
+        {
+            _readyBar.fillAmount = 0;
+        }
     }
 
     #endregion

@@ -8,30 +8,42 @@ public class InputManager
 
     protected static Vector3 _lastMousePosition;
 
+    protected static float _deadzoneX = 0.2f;
+    protected static float _deadzoneZ = 0.2f;
+    protected static float _oneMinusDeadzoneX = 1.0f - _deadzoneX;
+    protected static float _oneMinusDeadzoneZ = 1.0f - _deadzoneZ;
+
     #endregion
 
     #region Methods
 
     public static bool IsShooting()
     {
-        return Input.GetButton("Fire") || Input.GetAxis("FireAxis") > 0.0f;
+        return Input.GetButton("Fire");// || Input.GetAxis("FireAxis") > 0.0f;
     }
 
     public static Vector3 GetMovementDirection()
     {
-        return new Vector3(Input.GetAxis("Horizontal"), 0.0f, Input.GetAxis("Vertical")).normalized;
+        Vector3 direction = new Vector3(Input.GetAxis("Horizontal"), 0.0f, Input.GetAxis("Vertical"));
+        //Applying deadzones
+        direction.x = Mathf.Sign(direction.x) * Mathf.Clamp01((Mathf.Abs(direction.x) - _deadzoneX) / _oneMinusDeadzoneX);
+        direction.z = Mathf.Sign(direction.z) * Mathf.Clamp01((Mathf.Abs(direction.z) - _deadzoneZ) / _oneMinusDeadzoneZ);
+        return Vector3.ClampMagnitude(direction, 1.0f);
     }
 
-    public static Vector3 GetForwardDirection()
+    public static Vector3 GetCrosshairMovement()
     {
-        return new Vector3(Input.GetAxis("RotationX"), 0.0f, Input.GetAxis("RotationY")).normalized;
+        Vector3 direction = new Vector3(Input.GetAxis("RotationX"), 0.0f, Input.GetAxis("RotationY"));
+        //Applying deadzones
+        direction.x = Mathf.Sign(direction.x) * Mathf.Clamp01((Mathf.Abs(direction.x) - _deadzoneX) / _oneMinusDeadzoneX);
+        direction.z = Mathf.Sign(direction.z) * Mathf.Clamp01((Mathf.Abs(direction.z) - _deadzoneZ) / _oneMinusDeadzoneZ);
+        return Vector3.ClampMagnitude(direction, 1.0f);
     }
 
-    public static Vector3 GetMouseForward(Vector3 objectWorldPosition)
+    public static Vector3 GetMouseCrosshairMovement()
     {
-        Vector3 objectScreenPosition = Camera.main.WorldToScreenPoint(objectWorldPosition);
         Vector3 currentMousePosition = Input.mousePosition;
-        Vector3 difference = currentMousePosition - objectScreenPosition;
+        Vector3 difference = currentMousePosition - _lastMousePosition;
         if((currentMousePosition - _lastMousePosition).magnitude <= 1)
         {
             difference = Vector3.zero;
@@ -39,7 +51,7 @@ public class InputManager
         difference.z = difference.y;
         difference.y = 0.0f;
         _lastMousePosition = Input.mousePosition;
-        return difference.normalized;
+        return Vector3.ClampMagnitude(difference, 1.0f);
     }
 
     #endregion

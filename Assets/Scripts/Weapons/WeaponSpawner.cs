@@ -96,6 +96,7 @@ public class WeaponSpawner : MonoBehaviour
         if (enabled && _currentSpawnedWeapon != null)
         {
             _currentSpawnedWeapon.gameObject.SetActive(false);
+            _currentSpawnedWeapon = null;
         }
     }
 

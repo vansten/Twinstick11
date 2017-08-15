@@ -5,29 +5,45 @@ using UnityEngine;
 public class Crosshair : MonoBehaviour
 {
     #region Variables
-
+    
     [SerializeField]
-    protected float _offset;
+    protected float _maxOffset;
+    [SerializeField]
+    protected float _mouseSpeed;
+    [SerializeField]
+    protected float _gamepadSpeed;
+
+    protected Vector3 _offset;
 
     #endregion
 
     #region Unity Methods
 
-    protected void OnValidate()
-    {
-        LateUpdate();
-    }
-
     protected void Awake()
     {
         Cursor.visible = false;
+        GameController.Instance.OnGamePhaseChanged += OnGamePhaseChangedCallback;
     }
 
     protected void LateUpdate()
     {
-        transform.up = Vector3.up;
-        transform.position = transform.parent.position + transform.parent.forward * _offset;
+        _offset += (InputManager.GetCrosshairMovement() * _gamepadSpeed + InputManager.GetMouseCrosshairMovement() * _mouseSpeed) * Time.deltaTime;
+        _offset = Vector3.ClampMagnitude(_offset, _maxOffset);
+        transform.position = GameController.Instance.Player.transform.position + _offset;
     }
 
-    #endregion  
+    #endregion
+
+    #region Methods
+
+    protected void OnGamePhaseChangedCallback(GamePhase gamePhase)
+    {
+        enabled = gamePhase == GamePhase.Game;
+        if(enabled)
+        {
+            _offset = Vector3.forward;
+        }
+    }
+
+    #endregion
 }
