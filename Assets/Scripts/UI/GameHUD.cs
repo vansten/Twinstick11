@@ -23,6 +23,8 @@ public class GameHUD : MonoBehaviour
     protected UnityEngine.UI.Text _enemiesLeftText;
     [SerializeField]
     protected UnityEngine.UI.Image _readyBar;
+    [SerializeField]
+    protected UnityEngine.UI.Text _newWaveText;
 
     [SerializeField]
     protected List<WeaponInfo> _weaponsInfo;
@@ -88,6 +90,8 @@ public class GameHUD : MonoBehaviour
     protected void OnWaveChangedCallback(uint currentWave)
     {
         _currentWaveText.text = currentWave.ToString();
+        _newWaveText.text = string.Format("Wave {0} completed!\nYou've earned NOTHING!\nSurvival is the only reward!", currentWave - 1);
+        _newWaveText.gameObject.SetActive(currentWave > 1);
     }
 
     protected void OnHPChangedCallback(float hp, float percent)

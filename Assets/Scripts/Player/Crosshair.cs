@@ -30,6 +30,8 @@ public class Crosshair : MonoBehaviour
         if(gamepadInput.magnitude > 0.1f)
         {
             _targetCursorOffset = gamepadInput.normalized * _gamepadOffset;
+
+            _offset = Vector3.Lerp(_offset, _targetCursorOffset, 0.3f);
         }
         else
         {
@@ -37,10 +39,10 @@ public class Crosshair : MonoBehaviour
             {
                 Vector3 currentWorldPosition = GetGroundPosition(Input.mousePosition);
                 _targetCursorOffset = currentWorldPosition - _target.position;
+
+                _offset = _targetCursorOffset;
             }
         }
-
-        _offset = Vector3.Lerp(_offset, _targetCursorOffset, 0.3f);
 
         transform.position = _target.position + _offset;
     }

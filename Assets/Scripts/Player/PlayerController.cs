@@ -113,8 +113,6 @@ public class PlayerController : MonoBehaviour, IDamagable
     protected void FixedUpdate()
     {
         _rigidbody.velocity = Vector3.zero;
-
-        ProcessTransform();
     }
 
     protected void Update()
@@ -123,6 +121,8 @@ public class PlayerController : MonoBehaviour, IDamagable
         {
             ProcessShoot();
         }
+
+        ProcessTransform();
     }
 
     #endregion
@@ -148,10 +148,10 @@ public class PlayerController : MonoBehaviour, IDamagable
         CurrentEquippedWeapon = weapon;
     }
 
-    public void EquipBaseWeapon()
+    public void EquipBaseWeapon(float delay = 0.5f)
     {
         BaseWeapon weapon = GameController.Instance.CreateWeapon(_startWeapon, _weaponParent);
-        StartCoroutine(WaitToEquipBaseWeapon(weapon, 0.5f));
+        StartCoroutine(WaitToEquipBaseWeapon(weapon, delay));
     }
 
     public void TakeDamage(float damage, Vector3 hitPosition)
@@ -201,7 +201,7 @@ public class PlayerController : MonoBehaviour, IDamagable
         {
             transform.position = _startPosition;
             CurrentHP = _baseHP;
-            EquipBaseWeapon();
+            EquipBaseWeapon(0.0f);
         }
     }
 
