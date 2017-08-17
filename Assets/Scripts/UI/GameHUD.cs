@@ -90,7 +90,7 @@ public class GameHUD : MonoBehaviour
     protected void OnWaveChangedCallback(uint currentWave)
     {
         _currentWaveText.text = currentWave.ToString();
-        _newWaveText.text = string.Format("Wave {0} completed!\nYou've earned NOTHING!\nSurvival is the only reward!", currentWave - 1);
+        _newWaveText.text = string.Format("Wave {0} completed!", currentWave - 1);
         _newWaveText.gameObject.SetActive(currentWave > 1);
     }
 
